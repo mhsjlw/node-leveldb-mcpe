@@ -13,12 +13,6 @@ using v8::Value;
 
 namespace addon {
   leveldb_t *db;
-  leveldb_options_t *options;
-  leveldb_readoptions_t *roptions;
-  leveldb_writeoptions_t *woptions;
-  char *err = NULL;
-  char *read;
-  size_t read_len;
 
   const char* ToCString(const String::Utf8Value& value) {
     return *value ? *value : "string conversion failed";
@@ -43,11 +37,13 @@ namespace addon {
       Nan::ThrowError("Database name is empty");
       return;
     } else {
+      leveldb_options_t *options;
       options = leveldb_options_create();
       leveldb_options_set_create_if_missing(options, 1);
 
       leveldb_options_set_compression(options, 2);
 
+      char *err = NULL;
       db = leveldb_open(options, arg, &err);
 
       if (err != NULL) {
@@ -81,7 +77,12 @@ namespace addon {
     String::Utf8Value str(info[0]);
     const char* arg = ToCString(str);
 
+    leveldb_readoptions_t *roptions;
     roptions = leveldb_readoptions_create();
+
+    char *read;
+    size_t read_len;
+    char *err = NULL;
     read = leveldb_get(db, roptions, arg, str.length(), &read_len, &err);
 
     if (err != NULL) {
@@ -112,7 +113,9 @@ namespace addon {
     String::Utf8Value str2(info[1]);
     const char* arg2 = ToCString(str2);
 
+    leveldb_writeoptions_t *woptions;
     woptions = leveldb_writeoptions_create();
+    char *err = NULL;
     leveldb_put(db, woptions, arg, str.length(), arg2, str2.length(), &err);
 
     if (err != NULL) {
@@ -139,7 +142,9 @@ namespace addon {
     String::Utf8Value str(info[0]);
     const char* arg = ToCString(str);
 
+    leveldb_writeoptions_t *woptions;
     woptions = leveldb_writeoptions_create();
+    char *err = NULL;
     leveldb_delete(db, woptions, arg, str.length(), &err);
 
     if (err != NULL) {
