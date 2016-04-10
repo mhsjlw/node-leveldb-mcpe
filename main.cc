@@ -1,128 +1,169 @@
-#include <node.h>
 #include <leveldb/c.h>
 #include <string.h>
+#include <nan.h>
 
-namespace demo {
-  using v8::Exception;
-  using v8::FunctionCallbackInfo;
-  using v8::Isolate;
-  using v8::Local;
-  using v8::Number;
-  using v8::Object;
-  using v8::String;
-  using v8::Value;
+using v8::Exception;
+using v8::FunctionCallbackInfo;
+using v8::Isolate;
+using v8::Local;
+using v8::Number;
+using v8::Object;
+using v8::String;
+using v8::Value;
 
-  leveldb_t *db;
-  leveldb_options_t *options;
-  leveldb_readoptions_t *roptions;
-  leveldb_writeoptions_t *woptions;
-  char *err = NULL;
-  char *read;
-  size_t read_len;
+leveldb_t *db;
+leveldb_options_t *options;
+leveldb_readoptions_t *roptions;
+leveldb_writeoptions_t *woptions;
+char *err = NULL;
+char *read;
+size_t read_len;
 
-  // just a hack to convert strings, we should probably think of an alternative
-  const char* ToCString(const String::Utf8Value& value) {
-    return *value ? *value : "string conversion failed";
+const char* ToCString(const String::Utf8Value& value) {
+  return *value ? *value : "string conversion failed";
+}
+
+void Open(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+
+  if (info.Length() != 1) {
+    Nan::ThrowTypeError("Wrong number of arguments");
+    return;
   }
 
-  void Open(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = Isolate::GetCurrent();
+  if (!info[0]->IsString()) {
+    Nan::ThrowTypeError("Wrong type of arguments");
+    return;
+  }
 
+  String::Utf8Value str(info[0]);
+  const char* arg = ToCString(str);
+
+  if(strlen(arg) == 0) {
+    Nan::ThrowError("Database name is empty");
+    return;
+  } else {
     options = leveldb_options_create();
     leveldb_options_set_create_if_missing(options, 1);
-    //leveldb_options_set_compression(options, 2);
-    String::Utf8Value str(args[0]);
-    const char* bar = ToCString(str);
-    db = leveldb_open(options, bar, &err);
 
-    if (err != NULL) {
-      isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, "Failed to open database")));
-      return;
-    }
+    // compression is currently disabled because it's causing problems
+    // leveldb_options_set_compression(options, 2);
 
-    leveldb_free(err); err = NULL;
+    db = leveldb_open(options, arg, &err);
+
+    // this is broken for some reason, so it's disabled for now
+    // if (err != NULL) {
+    //   Nan::ThrowError("Failed to open database");
+    //   return;
+    // }
+    // leveldb_free(err); err = NULL;
+
     leveldb_options_destroy(options);
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "opened"));
+    info.GetReturnValue().Set(Nan::New("opened").ToLocalChecked());
   }
-
-  void Close(const FunctionCallbackInfo<Value>& args) {
-    leveldb_close(db);
-    Isolate* isolate = Isolate::GetCurrent();
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "closed"));
-  }
-
-  void Get(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = Isolate::GetCurrent();
-
-    roptions = leveldb_readoptions_create();
-    //leveldb_options_set_compression(roptions, leveldb_zlib_compression);
-    String::Utf8Value str(args[0]);
-    const char* bar = ToCString(str);
-
-    read = leveldb_get(db, roptions, bar, args[1]->NumberValue(), &read_len, &err);
-
-    if (err != NULL) {
-      isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, "Read fail")));
-      return;
-    }
-
-    leveldb_free(err); err = NULL;
-    leveldb_readoptions_destroy(roptions);
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, read));
-  }
-
-  void Put(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = Isolate::GetCurrent();
-
-    String::Utf8Value str(args[0]);
-    const char* bar = ToCString(str);
-
-    String::Utf8Value str2(args[2]);
-    const char* bar2 = ToCString(str2);
-
-    woptions = leveldb_writeoptions_create();
-    //leveldb_options_set_compression(woptions, leveldb_zlib_compression);
-    leveldb_put(db, woptions, bar, args[1]->NumberValue(), bar2, args[3]->NumberValue(), &err);
-
-    if (err != NULL) {
-      isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, "Write fail")));
-      return;
-    }
-
-    leveldb_free(err); err = NULL;
-    leveldb_writeoptions_destroy(woptions);
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "written"));
-  }
-
-  void Delete(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = Isolate::GetCurrent();
-
-    String::Utf8Value str(args[0]);
-    const char* bar = ToCString(str);
-
-    woptions = leveldb_writeoptions_create();
-    leveldb_delete(db, woptions, bar, args[1]->NumberValue(), &err);
-
-    if (err != NULL) {
-      isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, "Delete fail")));
-      return;
-    }
-
-    leveldb_free(err); err = NULL;
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "deleted"));
-  }
-
-  void Init(Local<Object> exports) {
-    NODE_SET_METHOD(exports, "open", Open);
-    NODE_SET_METHOD(exports, "close", Close);
-    NODE_SET_METHOD(exports, "get", Get);
-    NODE_SET_METHOD(exports, "put", Put);
-    NODE_SET_METHOD(exports, "delete", Delete);
-  }
-
-  NODE_MODULE(addon, Init)
 }
+
+void Close(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  leveldb_close(db);
+  info.GetReturnValue().Set(Nan::New("closed").ToLocalChecked());
+}
+
+void Get(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  if (info.Length() != 2) {
+    Nan::ThrowTypeError("Wrong number of arguments");
+    return;
+  }
+
+  if (!info[0]->IsString() && !info[1]->IsNumber()) {
+    Nan::ThrowTypeError("Wrong arguments");
+    return;
+  }
+
+  String::Utf8Value str(info[0]);
+  const char* arg = ToCString(str);
+
+  roptions = leveldb_readoptions_create();
+  read = leveldb_get(db, roptions, arg, info[1]->NumberValue(), &read_len, &err);
+
+  // this is broken for some reason, so it's disabled for now
+  // if (err != NULL) {
+  //   Nan::ThrowError("Read fail");
+  //   return;
+  // }
+  // leveldb_free(err); err = NULL;
+
+  leveldb_readoptions_destroy(roptions);
+  info.GetReturnValue().Set(Nan::New(read).ToLocalChecked());
+}
+
+void Put(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  if (info.Length() != 4) {
+    Nan::ThrowTypeError("Wrong number of arguments");
+    return;
+  }
+
+  if (!info[0]->IsString() && !info[1]->IsNumber() && !info[2]->IsString() && !info[3]->IsNumber()) {
+    Nan::ThrowTypeError("Wrong arguments");
+    return;
+  }
+
+  String::Utf8Value str(info[0]);
+  const char* arg = ToCString(str);
+
+  String::Utf8Value str2(info[2]);
+  const char* arg2 = ToCString(str2);
+
+  woptions = leveldb_writeoptions_create();
+  leveldb_put(db, woptions, arg, info[1]->NumberValue(), arg2, info[3]->NumberValue(), &err);
+
+  // this is broken for some reason, so it's disabled for now
+  // if (err != NULL) {
+  //   Nan::ThrowError("Write fail");
+  //   return;
+  // }
+  // leveldb_free(err); err = NULL;
+
+  leveldb_writeoptions_destroy(woptions);
+  info.GetReturnValue().Set(Nan::New("written").ToLocalChecked());
+}
+
+void Delete(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  if (info.Length() != 2) {
+    Nan::ThrowTypeError("Wrong number of arguments");
+    return;
+  }
+
+  if (!info[0]->IsString() && !info[1]->IsNumber()) {
+    Nan::ThrowTypeError("Wrong arguments");
+    return;
+  }
+
+  String::Utf8Value str(info[0]);
+  const char* arg = ToCString(str);
+
+  woptions = leveldb_writeoptions_create();
+  leveldb_delete(db, woptions, arg, info[1]->NumberValue(), &err);
+
+  // this is broken for some reason, so it's disabled for now
+  // if (err != NULL) {
+  //   Nan::ThrowError("Delete fail");
+  //   return;
+  // }
+  // leveldb_free(err); err = NULL;
+
+  info.GetReturnValue().Set(Nan::New("deleted").ToLocalChecked());
+}
+
+void Init(v8::Local<v8::Object> exports) {
+  exports->Set(Nan::New("open").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(Open)->GetFunction());
+  exports->Set(Nan::New("close").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(Close)->GetFunction());
+  exports->Set(Nan::New("get").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(Get)->GetFunction());
+  exports->Set(Nan::New("put").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(Put)->GetFunction());
+  exports->Set(Nan::New("delete").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(Delete)->GetFunction());
+}
+
+NODE_MODULE(addon, Init)
