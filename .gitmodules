@@ -1,4 +1,4 @@
 [submodule "leveldb-mcpe"]
 	path = leveldb-mcpe
-	url = git@github.com:rom1504/leveldb-mcpe.git
+	url = https://github.com/rom1504/leveldb-mcpe.git
 	branch = linux_build_fixes
