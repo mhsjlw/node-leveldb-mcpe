@@ -6,16 +6,9 @@ node-leveldb
 The Node Binding for LevelDB, updated with ZLib support for MCPE
 
 ## Installation
-Alright, firstly, make sure you don't have leveldb installed in your path then
 
-    git clone https://github.com/Mojang/leveldb-mcpe
-    cd leveldb-mcpe/
-    make
-    cp --preserve=links libleveldb.* /usr/local/lib
-    cp -r include/leveldb /usr/local/include/
-    sudo ldconfig
-
-Now, clone this repo and `node-gyp rebuild` or `npm install`
+`git clone --recursive git@github.com:mhsjlw/node-leveldb.git`
+`npm install`
 
 ## Usage
 It's not hard, trust me...
