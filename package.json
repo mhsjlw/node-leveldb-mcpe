@@ -12,15 +12,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mhsjlw/node-leveldb.git"
+    "url": "git+https://github.com/mhsjlw/node-leveldb-mcpe.git"
   },
   "author": "mhsjlw <mhsjlw@aol.com>",
   "license": "MIT",
   "gypfile": true,
   "bugs": {
-    "url": "https://github.com/mhsjlw/node-leveldb/issues"
+    "url": "https://github.com/mhsjlw/node-leveldb-mcpe/issues"
   },
-  "homepage": "https://github.com/mhsjlw/node-leveldb#readme",
+  "homepage": "https://github.com/mhsjlw/node-leveldb-mcpe#readme",
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^2.2.1"
