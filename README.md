@@ -8,7 +8,7 @@ The Node Binding for LevelDB, updated with ZLib support for MCPE
 ## Installation
 We've made it easy, just:
 ```
-$ git clone --recursive git@github.com:mhsjlw/node-leveldb.git
+$ git clone --recursive https://github.com/mhsjlw/node-leveldb-zlib.git
 $ npm install
 ```
 
