@@ -1,0 +1,24 @@
+{
+  "name": "node-leveldb",
+  "version": "1.0.0",
+  "description": "The Node Binding for LevelDB, updated with ZLib support for MCPE",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhsjlw/node-leveldb.git"
+  },
+  "author": "mhsjlw <mhsjlw@aol.com>",
+  "license": "MIT",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/mhsjlw/node-leveldb/issues"
+  },
+  "homepage": "https://github.com/mhsjlw/node-leveldb#readme"
+}
