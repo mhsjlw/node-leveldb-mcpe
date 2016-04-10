@@ -16,9 +16,11 @@ $ npm install
 It's not hard, trust me...
 
 ```javascript
-console.log(addon.open("db"));
-console.log(addon.put("key", "value"));
-console.log(addon.get("key"));
-console.log(addon.delete("key"));
-console.log(addon.close());
+var leveldb=require('leveldb-mcpe');
+
+console.log(leveldb.open("test"));
+console.log(leveldb.put("asd", "swag"));
+console.log(leveldb.get("asd"));
+console.log(leveldb.delete("asd"));
+console.log(leveldb.close());
 ```
