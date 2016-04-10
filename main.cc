@@ -126,12 +126,12 @@ namespace addon {
   }
 
   void Delete(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    if (info.Length() != 2) {
+    if (info.Length() != 1) {
       Nan::ThrowTypeError("Wrong number of arguments");
       return;
     }
 
-    if (!info[0]->IsString() && !info[1]->IsNumber()) {
+    if (!info[0]->IsString()) {
       Nan::ThrowTypeError("Wrong arguments");
       return;
     }
@@ -140,7 +140,7 @@ namespace addon {
     const char* arg = ToCString(str);
 
     woptions = leveldb_writeoptions_create();
-    leveldb_delete(db, woptions, arg, info[1]->NumberValue(), &err);
+    leveldb_delete(db, woptions, arg, str.length(), &err);
 
     if (err != NULL) {
       Nan::ThrowError("Delete fail");

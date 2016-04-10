@@ -17,8 +17,8 @@ It's not hard, trust me...
 
 ```javascript
 console.log(addon.open("db"));
-console.log(addon.put("key", 3, "value", 5));
-console.log(addon.get("key", 3));
-console.log(addon.delete("key", 3));
+console.log(addon.put("key", "value"));
+console.log(addon.get("key"));
+console.log(addon.delete("key"));
 console.log(addon.close());
 ```
