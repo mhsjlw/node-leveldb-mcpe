@@ -1,14 +1,16 @@
-node-leveldb
-============
+node-leveldb-zlib
+=================
 
 > Note: This is under heavy development, things will probably break so don't use this in production
 
 The Node Binding for LevelDB, updated with ZLib support for MCPE
 
 ## Installation
-
-`git clone --recursive git@github.com:mhsjlw/node-leveldb.git`
-`npm install`
+We've made it easy, just:
+```
+$ git clone --recursive git@github.com:mhsjlw/node-leveldb.git
+$ npm install
+```
 
 ## Usage
 It's not hard, trust me...

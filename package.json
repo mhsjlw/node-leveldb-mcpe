@@ -1,5 +1,5 @@
 {
-  "name": "node-leveldb",
+  "name": "leveldb-zlib",
   "version": "1.0.0",
   "description": "The Node Binding for LevelDB, updated with ZLib support for MCPE",
   "main": "index.js",
