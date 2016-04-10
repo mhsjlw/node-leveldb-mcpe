@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "cd leveldb-mcpe && make && cd .. && node-gyp rebuild"
+    "install": "cd leveldb-mcpe && make out-static/libleveldb.a && cd .. && node-gyp rebuild"
   },
   "repository": {
     "type": "git",
