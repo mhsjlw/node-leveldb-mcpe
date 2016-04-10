@@ -68,12 +68,12 @@ namespace addon {
 
   void Get(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
-    if (info.Length() != 2) {
+    if (info.Length() != 1) {
      Nan::ThrowTypeError("Wrong number of arguments");
      return;
     }
 
-    if (!info[0]->IsString() && !info[1]->IsNumber()) {
+    if (!info[0]->IsString()) {
      Nan::ThrowTypeError("Wrong arguments");
      return;
     }
@@ -82,7 +82,7 @@ namespace addon {
     const char* arg = ToCString(str);
 
     roptions = leveldb_readoptions_create();
-    read = leveldb_get(db, roptions, arg, info[1]->NumberValue(), &read_len, &err);
+    read = leveldb_get(db, roptions, arg, str.length(), &read_len, &err);
 
     if (err != NULL) {
       Nan::ThrowError("Read fail");
@@ -96,12 +96,12 @@ namespace addon {
   }
 
   void Put(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    if (info.Length() != 4) {
+    if (info.Length() != 2) {
       Nan::ThrowTypeError("Wrong number of arguments");
       return;
     }
 
-    if (!info[0]->IsString() && !info[1]->IsNumber() && !info[2]->IsString() && !info[3]->IsNumber()) {
+    if (!info[0]->IsString() && !info[1]->IsString()) {
       Nan::ThrowTypeError("Wrong arguments");
       return;
     }
@@ -109,11 +109,11 @@ namespace addon {
     String::Utf8Value str(info[0]);
     const char* arg = ToCString(str);
 
-    String::Utf8Value str2(info[2]);
+    String::Utf8Value str2(info[1]);
     const char* arg2 = ToCString(str2);
 
     woptions = leveldb_writeoptions_create();
-    leveldb_put(db, woptions, arg, info[1]->NumberValue(), arg2, info[3]->NumberValue(), &err);
+    leveldb_put(db, woptions, arg, str.length(), arg2, str2.length(), &err);
 
     if (err != NULL) {
       Nan::ThrowError("Write fail");
