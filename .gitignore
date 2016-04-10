@@ -1,0 +1,6 @@
+libleveldb*
+test/
+db/
+world/
+build/
+main.c
