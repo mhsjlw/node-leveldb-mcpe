@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/mhsjlw/node-leveldb/issues"
   },
-  "homepage": "https://github.com/mhsjlw/node-leveldb#readme"
+  "homepage": "https://github.com/mhsjlw/node-leveldb#readme",
+  "dependencies": {
+    "bindings": "^1.2.1"
+  }
 }

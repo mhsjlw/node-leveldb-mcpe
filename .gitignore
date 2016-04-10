@@ -4,3 +4,6 @@ db/
 world/
 build/
 main.c
+node_modules/
+npm-debug.log
+a.out
