@@ -1,6 +1,6 @@
 {
   "name": "leveldb-mcpe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Node Binding for LevelDB, updated with ZLib support for MCPE",
   "main": "index.js",
   "directories": {
