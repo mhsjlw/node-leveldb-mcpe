@@ -92,8 +92,7 @@ namespace addon {
     leveldb_free(err); err = NULL;
 
     leveldb_readoptions_destroy(roptions);
-    read[read_len]=0;
-    info.GetReturnValue().Set(Nan::New(read).ToLocalChecked());
+    info.GetReturnValue().Set(Nan::New(read,read_len).ToLocalChecked());
   }
 
   void Put(const Nan::FunctionCallbackInfo<v8::Value>& info) {
