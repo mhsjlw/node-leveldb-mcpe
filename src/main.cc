@@ -1,5 +1,5 @@
-#include <leveldb/c.h>
 #include <string.h>
+#include <leveldb/c.h>
 #include <nan.h>
 
 using v8::Exception;
@@ -11,162 +11,210 @@ using v8::Object;
 using v8::String;
 using v8::Value;
 
-namespace addon {
-  leveldb_t *db;
-
-  const char* ToCString(const String::Utf8Value& value) {
-    return *value ? *value : "string conversion failed";
+const char* ToCString(const String::Utf8Value &value) {
+  if (!*value) {
+    Nan::ThrowError("Failed convert argument to string");
   }
 
-  void Open(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  return *value;
+}
 
-    if (info.Length() != 1) {
-      Nan::ThrowTypeError("Wrong number of arguments");
-      return;
+namespace node_leveldb_mcpe_native {
+  class Database : public Nan::ObjectWrap {
+   public:
+    leveldb_t* db_;
+    static NAN_MODULE_INIT(Init) {
+      v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
+      tpl->SetClassName(Nan::New("Database").ToLocalChecked());
+      tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+      Nan::SetPrototypeMethod(tpl, "close", Close);
+      Nan::SetPrototypeMethod(tpl, "get", Get);
+      Nan::SetPrototypeMethod(tpl, "put", Put);
+      Nan::SetPrototypeMethod(tpl, "delete", Delete);
+
+      constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
+      Nan::Set(target, Nan::New("Database").ToLocalChecked(),
+        Nan::GetFunction(tpl).ToLocalChecked());
     }
 
-    if (!info[0]->IsString()) {
-      Nan::ThrowTypeError("Wrong type of arguments");
-      return;
+   private:
+    explicit Database(leveldb_t* db) : db_(db) {}
+    ~Database() {}
+
+    static NAN_METHOD(New) {
+      if (info.IsConstructCall()) {
+        if (info.Length() != 1) {
+          Nan::ThrowTypeError("Incorrect number of arguments; `name` required");
+          return;
+        }
+
+        if (!info[0]->IsString()) {
+          Nan::ThrowTypeError("Incorrect type of `name`, string was expected");
+          return;
+        }
+
+        String::Utf8Value str(info[0]); // `name`
+        const char *arg = ToCString(str);
+
+        if (strlen(arg) == 0) {
+          Nan::ThrowError("`name` required");
+          return;
+        } else {
+          leveldb_options_t *options;
+          options = leveldb_options_create();
+          leveldb_options_set_create_if_missing(options, 1);
+
+          leveldb_options_set_compression(options, 2);
+
+          char *err = NULL;
+          leveldb_t *db = leveldb_open(options, arg, &err);
+
+          if (err != NULL) {
+            Nan::ThrowError("Failed to open database");
+            return;
+          }
+          leveldb_free(err);
+          err = NULL;
+
+          leveldb_options_destroy(options);
+
+          Database *instance = new Database(db);
+          instance->Wrap(info.This());
+          info.GetReturnValue().Set(info.This());
+        }
+      }
     }
 
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
+    static NAN_METHOD(Close) {
+      Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
+      leveldb_close(instance->db_);
+      info.GetReturnValue().Set(Nan::Undefined());
+    }
 
-    if(strlen(arg) == 0) {
-      Nan::ThrowError("Database name is empty");
-      return;
-    } else {
-      leveldb_options_t *options;
-      options = leveldb_options_create();
-      leveldb_options_set_create_if_missing(options, 1);
-
-      leveldb_options_set_compression(options, 2);
-
-      char *err = NULL;
-      db = leveldb_open(options, arg, &err);
-
-      if (err != NULL) {
-        Nan::ThrowError("Failed to open database");
+    static NAN_METHOD(Get) {
+      if (info.Length() != 1) {
+        Nan::ThrowTypeError("Incorrect number of arguments; `key` required");
         return;
       }
-      leveldb_free(err); err = NULL;
 
-      leveldb_options_destroy(options);
-      info.GetReturnValue().Set(Nan::New("opened").ToLocalChecked());
-    }
-  }
+      if (!info[0]->IsString()) {
+        Nan::ThrowTypeError("Incorrect type of `key`, string was expected");
+        return;
+      }
 
-  void Close(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    leveldb_close(db);
-    info.GetReturnValue().Set(Nan::New("closed").ToLocalChecked());
-  }
+      String::Utf8Value str(info[0]);
+      const char *arg = ToCString(str);
 
-  void Get(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+      Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
+      leveldb_t* db = instance->db_;
 
-    if (info.Length() != 1) {
-     Nan::ThrowTypeError("Wrong number of arguments");
-     return;
-    }
+      leveldb_readoptions_t *roptions;
+      roptions = leveldb_readoptions_create();
 
-    if (!info[0]->IsString()) {
-     Nan::ThrowTypeError("Wrong arguments");
-     return;
-    }
+      char *read;
+      size_t read_len;
+      char *err = NULL;
+      read = leveldb_get(db, roptions, arg, str.length(), &read_len, &err);
 
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
+      if (err != NULL) {
+        Nan::ThrowError("Read fail");
+        return;
+      }
 
-    leveldb_readoptions_t *roptions;
-    roptions = leveldb_readoptions_create();
+      leveldb_free(err);
+      err = NULL;
 
-    char *read;
-    size_t read_len;
-    char *err = NULL;
-    read = leveldb_get(db, roptions, arg, str.length(), &read_len, &err);
+      leveldb_readoptions_destroy(roptions);
 
-    if (err != NULL) {
-      Nan::ThrowError("Read fail");
-      return;
-    }
-    leveldb_free(err); err = NULL;
-
-    leveldb_readoptions_destroy(roptions);
-    info.GetReturnValue().Set(Nan::New(read,read_len).ToLocalChecked());
-  }
-
-  void Put(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    if (info.Length() != 2) {
-      Nan::ThrowTypeError("Wrong number of arguments");
-      return;
+      if(read_len <= 0) {
+        // <= 0
+        info.GetReturnValue().Set(Nan::Undefined());
+      } else {
+        // Got a value
+        info.GetReturnValue().Set(Nan::New(read, read_len).ToLocalChecked());
+      }
     }
 
-    if (!info[0]->IsString() && !info[1]->IsString()) {
-      Nan::ThrowTypeError("Wrong arguments");
-      return;
+    static NAN_METHOD(Put) {
+      if (info.Length() != 2) {
+        Nan::ThrowTypeError("Incorrect number of arguments; `key` and `value` required");
+        return;
+      }
+
+      if (!info[0]->IsString() && !info[1]->IsString()) {
+        Nan::ThrowTypeError("Incorrect type of `key`, string was expected");
+        return;
+      }
+
+      if (!info[1]->IsString()) {
+        Nan::ThrowTypeError("Incorrect type of `value`, string was expected");
+        return;
+      }
+
+      String::Utf8Value str(info[0]);
+      const char *arg = ToCString(str);
+
+      String::Utf8Value str2(info[1]);
+      const char *arg2 = ToCString(str2);
+
+      Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
+      leveldb_t* db = instance->db_;
+
+      leveldb_writeoptions_t *woptions;
+      woptions = leveldb_writeoptions_create();
+      char *err = NULL;
+      leveldb_put(db, woptions, arg, str.length(), arg2, str2.length(), &err);
+
+      if (err != NULL) {
+        Nan::ThrowError("Write fail");
+        return;
+      }
+      leveldb_free(err);
+      err = NULL;
+
+      leveldb_writeoptions_destroy(woptions);
+      info.GetReturnValue().Set(Nan::Undefined());
     }
 
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
+    static NAN_METHOD(Delete) {
+      if (info.Length() != 1) {
+        Nan::ThrowTypeError("Incorrect number of arguments; `key` required");
+        return;
+      }
 
-    String::Utf8Value str2(info[1]);
-    const char* arg2 = ToCString(str2);
+      if (!info[0]->IsString()) {
+        Nan::ThrowTypeError("Incorrect type of `key`, string was expected");
+        return;
+      }
 
-    leveldb_writeoptions_t *woptions;
-    woptions = leveldb_writeoptions_create();
-    char *err = NULL;
-    leveldb_put(db, woptions, arg, str.length(), arg2, str2.length(), &err);
+      String::Utf8Value str(info[0]);
+      const char *arg = ToCString(str);
 
-    if (err != NULL) {
-      Nan::ThrowError("Write fail");
-      return;
+      Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
+      leveldb_t* db = instance->db_;
+
+      leveldb_writeoptions_t *woptions;
+      woptions = leveldb_writeoptions_create();
+      char *err = NULL;
+      leveldb_delete(db, woptions, arg, str.length(), &err);
+
+      if (err != NULL) {
+        Nan::ThrowError("Delete fail");
+        return;
+      }
+
+      leveldb_free(err);
+      err = NULL;
+
+      info.GetReturnValue().Set(Nan::Undefined());
     }
-    leveldb_free(err); err = NULL;
 
-    leveldb_writeoptions_destroy(woptions);
-    info.GetReturnValue().Set(Nan::New("written").ToLocalChecked());
-  }
-
-  void Delete(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-    if (info.Length() != 1) {
-      Nan::ThrowTypeError("Wrong number of arguments");
-      return;
+    static inline Nan::Persistent<v8::Function> & constructor() {
+      static Nan::Persistent<v8::Function> my_constructor;
+      return my_constructor;
     }
+  };
 
-    if (!info[0]->IsString()) {
-      Nan::ThrowTypeError("Wrong arguments");
-      return;
-    }
-
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
-
-    leveldb_writeoptions_t *woptions;
-    woptions = leveldb_writeoptions_create();
-    char *err = NULL;
-    leveldb_delete(db, woptions, arg, str.length(), &err);
-
-    if (err != NULL) {
-      Nan::ThrowError("Delete fail");
-      return;
-    }
-    leveldb_free(err); err = NULL;
-
-    info.GetReturnValue().Set(Nan::New("deleted").ToLocalChecked());
-  }
-
-  void Init(v8::Local<v8::Object> exports) {
-    exports->Set(Nan::New("open").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(Open)->GetFunction());
-    exports->Set(Nan::New("close").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(Close)->GetFunction());
-    exports->Set(Nan::New("get").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(Get)->GetFunction());
-    exports->Set(Nan::New("put").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(Put)->GetFunction());
-    exports->Set(Nan::New("delete").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(Delete)->GetFunction());
-  }
-
-  NODE_MODULE(addon, Init)
+  NODE_MODULE(addon, Database::Init)
 }

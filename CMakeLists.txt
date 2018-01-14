@@ -19,7 +19,7 @@ include_directories(${CMAKE_BINARY_DIR}/ext/leveldb/include)
 set(LIBRARIES ${CMAKE_BINARY_DIR}/ext/leveldb/lib/libleveldb.a)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
-add_dependencies(${PROJECT_NAME} leveldb)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC})
+add_dependencies(${PROJECT_NAME} leveldb)
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${LIBRARIES})

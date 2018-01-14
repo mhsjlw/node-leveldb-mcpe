@@ -12,11 +12,14 @@ $ npm install
 
 ## Usage
 ```javascript
-const leveldb = require('leveldb-mcpe');
+const levelup = require('levelup');
+const db = levelup(new (require('../'))('test'));
 
-leveldb.open('test');
-leveldb.put('key', 'value');
-leveldb.get('key'); // => 'value'
-leveldb.delete('key');
-leveldb.close();
+db.put('foo', 'bar', function (err) {
+  if (err) throw err;
+  db.get('foo', function (err, value) {
+    if (err) throw err;
+    console.log('Got', value);
+  });
+});
 ```
