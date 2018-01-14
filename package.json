@@ -1,20 +1,17 @@
 {
   "name": "leveldb-mcpe",
-  "version": "1.0.1",
-  "description": "The Node Binding for LevelDB, updated with ZLib support for MCPE",
+  "version": "1.1.0",
+  "description": "JavaScript bindings for Mojang's fork of LevelDB",
   "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "cd leveldb-mcpe && make out-static/libleveldb.a && cd .. && node-gyp rebuild"
+    "install": "cmake-js compile -m"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mhsjlw/node-leveldb-mcpe.git"
   },
-  "author": "mhsjlw <mhsjlw@aol.com>",
+  "author": "mhsjlw",
   "license": "MIT",
   "gypfile": true,
   "bugs": {
@@ -22,7 +19,8 @@
   },
   "homepage": "https://github.com/mhsjlw/node-leveldb-mcpe#readme",
   "dependencies": {
-    "bindings": "^1.2.1",
-    "nan": "^2.2.1"
+    "bindings": "^1.3.0",
+    "cmake-js": "^3.6.1",
+    "nan": "^2.8.0"
   }
 }
