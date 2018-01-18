@@ -1,0 +1,15 @@
+diff --git a/Makefile b/Makefile
+index 472c32f..bb01285 100644
+--- a/Makefile
++++ b/Makefile
+@@ -59,8 +59,8 @@ BENCHMARKS = \
+ 	doc/bench/db_bench_sqlite3 \
+ 	doc/bench/db_bench_tree_db
+ 
+-CFLAGS += -I. -I./include $(PLATFORM_CCFLAGS) $(OPT)
+-CXXFLAGS += -DDLLX= -I. -I./include $(PLATFORM_CXXFLAGS) $(OPT)
++CFLAGS += -I. -I./include -fPIC $(PLATFORM_CCFLAGS) $(OPT)
++CXXFLAGS += -DDLLX= -I. -I./include -fPIC $(PLATFORM_CXXFLAGS) $(OPT)
+ 
+ LDFLAGS += $(PLATFORM_LDFLAGS)
+ LIBS += $(PLATFORM_LIBS) -lz
