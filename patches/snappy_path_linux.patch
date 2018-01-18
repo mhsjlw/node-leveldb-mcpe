@@ -1,0 +1,14 @@
+diff --git a/build_detect_platform b/build_detect_platform
+index d2a20ce..3cf502b 100755
+--- a/build_detect_platform
++++ b/build_detect_platform
+@@ -205,7 +205,8 @@ EOF
+     # Test whether Snappy library is installed
+     # http://code.google.com/p/snappy/
+     $CXX $CXXFLAGS -x c++ - -o $CXXOUTPUT 2>/dev/null  <<EOF
+-      #include <snappy.h>
++      // Thanks, Mojang
++      #include <snappy/snappy.h>
+       int main() {}
+ EOF
+     if [ "$?" = 0 ]; then
