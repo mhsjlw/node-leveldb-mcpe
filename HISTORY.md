@@ -1,6 +1,8 @@
-## 1.1.0
+## 2.0.0
 
-* Port build system to CMake
+* Use CMake for building
+* Abstract away the lower-level LevelDB, use levelup instead
+* Switch to a class-based interface to LevelDB (not accessible to the user)
 
 ## 1.0.1
 
