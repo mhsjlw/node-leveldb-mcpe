@@ -37,8 +37,8 @@ class MinecraftLevelDOWN {
   }
 
   _close(callback) {
-    db.close();
-    process.nextTick(callback);
+      this._store.close();
+      process.nextTick(callback);
   }
 }
 
