@@ -21,11 +21,11 @@
   "dependencies": {
     "abstract-leveldown": "^3.0.0",
     "bindings": "^1.3.0",
-    "cmake-js": "^3.6.1",
+    "cmake-js": "^5.1.0",
     "nan": "^2.8.0"
   },
   "devDependencies": {
-    "jest": "^22.1.4",
+    "jest": "^24.5.0",
     "levelup": "^2.0.1"
   }
 }
