@@ -33,12 +33,10 @@ else(NOT UNIX)
   )
 endif(UNIX)
 
-file(GLOB SOURCE_FILES src/*.cc)
-
 include_directories(${CMAKE_BINARY_DIR}/ext/leveldb/include)
 set(LIBRARIES ${CMAKE_BINARY_DIR}/ext/leveldb/lib/libleveldb.a)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED src/entrypoint.cpp)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC})
 add_dependencies(${PROJECT_NAME} leveldb)
