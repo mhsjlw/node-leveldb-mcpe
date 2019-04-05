@@ -49,6 +49,8 @@ public:
 
 private:
   uint32_t iterator_count_ = 0;
+
+  // TODO(keegan), replace this with a class
   std::map<uint32_t, leveldb_iterator_t*> iterators_;
   std::map<uint32_t, leveldb_readoptions_t*> iterator_options_;
 
@@ -111,13 +113,14 @@ private:
       return;
     }
 
-    if (!info[0]->IsString()) {
-      Nan::ThrowTypeError("Incorrect type of `key`, string was expected");
+    if (!node::Buffer::HasInstance(info[0])) {
+      Nan::ThrowTypeError("Incorrect type of `key`, Buffer was expected");
       return;
     }
 
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
+    Local<Object> input = info[0]->ToObject();
+    const char* key_input = node::Buffer::Data(input);
+    size_t key_input_sz = node::Buffer::Length(input);
 
     Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
     leveldb_t* db = instance->db_;
@@ -128,7 +131,7 @@ private:
     char* read;
     size_t read_len;
     char* err = NULL;
-    read = leveldb_get(db, roptions, arg, str.length(), &read_len, &err);
+    read = leveldb_get(db, roptions, key_input, key_input_sz, &read_len, &err);
 
     if (err != NULL) {
       Nan::ThrowError("Read fail");
@@ -141,11 +144,9 @@ private:
     leveldb_readoptions_destroy(roptions);
 
     if (read_len <= 0) {
-      // <= 0
       info.GetReturnValue().Set(Nan::Undefined());
     } else {
-      // Got a value
-      info.GetReturnValue().Set(Nan::New(read, read_len).ToLocalChecked());
+      info.GetReturnValue().Set(Nan::NewBuffer(read, read_len).ToLocalChecked());
     }
   }
 
@@ -156,21 +157,23 @@ private:
       return;
     }
 
-    if (!info[0]->IsString() && !info[1]->IsString()) {
-      Nan::ThrowTypeError("Incorrect type of `key`, string was expected");
+    if (!node::Buffer::HasInstance(info[0])) {
+      Nan::ThrowTypeError("Incorrect type of `key`, Buffer was expected");
       return;
     }
 
-    if (!info[1]->IsString()) {
-      Nan::ThrowTypeError("Incorrect type of `value`, string was expected");
+    if (!node::Buffer::HasInstance(info[1])) {
+      Nan::ThrowTypeError("Incorrect type of `value`, Buffer was expected");
       return;
     }
 
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
+    Local<Object> input = info[0]->ToObject();
+    const char* key_input = node::Buffer::Data(input);
+    size_t key_input_sz = node::Buffer::Length(input);
 
-    String::Utf8Value str2(info[1]);
-    const char* arg2 = ToCString(str2);
+    input = info[1]->ToObject();
+    const char* value_input = node::Buffer::Data(input);
+    size_t value_input_sz = node::Buffer::Length(input);
 
     Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
     leveldb_t* db = instance->db_;
@@ -178,7 +181,7 @@ private:
     leveldb_writeoptions_t* woptions;
     woptions = leveldb_writeoptions_create();
     char* err = NULL;
-    leveldb_put(db, woptions, arg, str.length(), arg2, str2.length(), &err);
+    leveldb_put(db, woptions, key_input, key_input_sz, value_input, value_input_sz, &err);
 
     if (err != NULL) {
       Nan::ThrowError("Write fail");
@@ -197,13 +200,14 @@ private:
       return;
     }
 
-    if (!info[0]->IsString()) {
-      Nan::ThrowTypeError("Incorrect type of `key`, string was expected");
+    if (!node::Buffer::HasInstance(info[0])) {
+      Nan::ThrowTypeError("Incorrect type of `key`, Buffer was expected");
       return;
     }
 
-    String::Utf8Value str(info[0]);
-    const char* arg = ToCString(str);
+    Local<Object> input = info[0]->ToObject();
+    const char* key_input = node::Buffer::Data(input);
+    size_t key_input_sz = node::Buffer::Length(input);
 
     Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
     leveldb_t* db = instance->db_;
@@ -211,7 +215,7 @@ private:
     leveldb_writeoptions_t* woptions;
     woptions = leveldb_writeoptions_create();
     char* err = NULL;
-    leveldb_delete(db, woptions, arg, str.length(), &err);
+    leveldb_delete(db, woptions, key_input, key_input_sz, &err);
 
     if (err != NULL) {
       Nan::ThrowError("Delete fail");
@@ -295,10 +299,10 @@ private:
     Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
 
     uint32_t id = (uint32_t) v8::Number::Cast(*info[0])->Value();
-    size_t keylen;
-    const char* key = leveldb_iter_key(instance->iterators_[id], &keylen);
+    size_t key_sz;
+    const char* key = leveldb_iter_key(instance->iterators_[id], &key_sz);
 
-    info.GetReturnValue().Set(Nan::New(key, keylen).ToLocalChecked());
+    info.GetReturnValue().Set(Nan::CopyBuffer(key, key_sz).ToLocalChecked());
   }
 
   static NAN_METHOD(IterValue) {
@@ -310,10 +314,11 @@ private:
     Database* instance = Nan::ObjectWrap::Unwrap<Database>(info.Holder());
 
     uint32_t id = (uint32_t) v8::Number::Cast(*info[0])->Value();
-    size_t valuelen;
-    const char* value = leveldb_iter_value(instance->iterators_[id], &valuelen);
 
-    info.GetReturnValue().Set(Nan::New(value, valuelen).ToLocalChecked());
+    size_t value_sz;
+    const char* value = leveldb_iter_value(instance->iterators_[id], &value_sz);
+
+    info.GetReturnValue().Set(Nan::CopyBuffer(value, value_sz).ToLocalChecked());
   }
 
   static inline Nan::Persistent<v8::Function>& constructor() {

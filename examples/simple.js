@@ -2,9 +2,9 @@ const levelup = require('levelup')
 const db = levelup(new (require('../'))('example.db'))
 
 async function entrypoint () {
-  await db.put('foo', 'bar')
-  await db.put('quux', 'bazz')
-  await db.put('lorem', 'ipsum')
+  await db.put(Buffer.from('foo'), Buffer.from('bar'))
+  await db.put(Buffer.from('quux'), Buffer.from('bazz'))
+  await db.put(Buffer.from('lorem'), Buffer.from('ipsum'))
 
   db.createReadStream()
     .on('data', (data) => {

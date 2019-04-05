@@ -7,9 +7,9 @@ const db = levelup(new (require('../'))('iterator.db'))
 test('can iterate over inserted keys', async () => {
   let results = [ ]
 
-  await db.put('foo', 'bar')
-  await db.put('quux', 'bazz')
-  await db.put('lorem', 'ipsum')
+  await db.put(Buffer.from('foo'), Buffer.from('bar'))
+  await db.put(Buffer.from('quux'), Buffer.from('bazz'))
+  await db.put(Buffer.from('lorem'), Buffer.from('ipsum'))
 
   // FIXME(keegan), is there a better way [?]
   await (new Promise((resolve) => {

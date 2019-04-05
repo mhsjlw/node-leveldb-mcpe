@@ -10,24 +10,24 @@ test('can open and close database', async () => {
 })
 
 test('can read and write string', async () => {
-  const key = 'key'
-  const value = 'value'
+  const key = Buffer.from('key')
+  const value = Buffer.from('value')
 
   await db.put(key, value)
   const ret = await db.get(key)
-  return expect(ret).toBe(value)
+  return expect(ret).toEqual(value)
 })
 
 test('can delete key', async () => {
-  const key = 'foo'
-  const value = 'bar'
+  const key = Buffer.from('foo')
+  const value = Buffer.from('bar')
 
   await db.put(key, value)
   return expect(db.del(key)).resolves.toEqual(undefined)
 })
 
 test('throws error on non-existent key', async () => {
-  const key = 'foobar'
+  const key = Buffer.from('foobar')
 
   return expect(db.get(key)).rejects.toThrow(`Key not found in database [${key}]`)
 })

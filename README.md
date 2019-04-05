@@ -13,16 +13,16 @@ $ npm install
 ## Usage
 Using callbacks:
 ```javascript
-const levelup = require('levelup');
-const db = levelup(new (require('../'))('example.db'));
+const levelup = require('levelup')
+const db = levelup(new (require('../'))('example.db'))
 
-db.put('foo', 'bar', function (err) {
-  if (err) throw err;
-  db.get('foo', function (err, value) {
-    if (err) throw err;
-    console.log(value);
-  });
-});
+db.put(Buffer.from('foo'), Buffer.from('bar'), err => {
+  if (err) throw err
+  db.get(Buffer.from('foo'), (err, value) => {
+    if (err) throw err
+    console.log(value)
+  })
+})
 ```
 
 Or, using `async`/`await` syntax:
@@ -31,9 +31,9 @@ const levelup = require('levelup')
 const db = levelup(new (require('../'))('example.db'))
 
 async function entrypoint () {
-  await db.put('foo', 'bar')
-  await db.put('quux', 'bazz')
-  await db.put('lorem', 'ipsum')
+  await db.put(Buffer.from('foo'), Buffer.from('bar'))
+  await db.put(Buffer.from('quux'), Buffer.from('bazz'))
+  await db.put(Buffer.from('lorem'), Buffer.from('ipsum'))
 
   db.createReadStream()
     .on('data', (data) => {
