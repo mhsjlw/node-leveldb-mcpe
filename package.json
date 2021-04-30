@@ -9,7 +9,8 @@
     },
     "scripts": {
         "test": "jest",
-        "install": "cmake-js compile --prefer-make"
+        "install": "cmake-js compile --prefer-make",
+        "build": "cmake-js compile --prefer-make"
     },
     "repository": {
         "type": "git",

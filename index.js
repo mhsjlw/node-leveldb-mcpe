@@ -5,7 +5,7 @@ const { AbstractLevelDOWN, AbstractIterator } = require('abstract-leveldown')
 
 class MinecraftAbstractIterator extends AbstractIterator {
   constructor (store) {
-    super()
+    super(store)
     this._store = store
     this._iterator_store = this._store.iteratorNew()
   }
@@ -32,6 +32,7 @@ class MinecraftAbstractIterator extends AbstractIterator {
 
 class MinecraftLevelDOWN {
   constructor (location) {
+    this.location = location;
     AbstractLevelDOWN.call(this, location)
   }
 

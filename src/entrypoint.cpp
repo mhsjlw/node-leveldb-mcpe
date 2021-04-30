@@ -71,10 +71,10 @@ private:
       }
 
       Nan::Utf8String str(info[0]); // `name`
-      std::string cc_string(*str);
+      std::string cc_string(*str, str.length());
       const char* arg = cc_string.c_str();
 
-      if (strlen(arg) == 0) {
+      if (str.length() <= 0) {
         Nan::ThrowError("`name` required");
         return;
       } else {
