@@ -3,6 +3,7 @@
     "version": "2.0.0",
     "description": "JavaScript bindings for Mojang's fork of LevelDB",
     "main": "index.js",
+    "types": "index.d.ts",
     "engines": {
         "node": ">=14.0.0",
         "npm": "^7.0.0"
