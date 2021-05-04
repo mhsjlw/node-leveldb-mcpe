@@ -1,6 +1,5 @@
 build/
 node_modules/
 examples/example/
-package-lock.json
 
 *.db

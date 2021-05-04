@@ -7,6 +7,7 @@ using v8::Exception;
 using v8::FunctionCallbackInfo;
 using v8::Isolate;
 using v8::Local;
+using v8::Context;
 using v8::Number;
 using v8::Object;
 using v8::String;
@@ -69,10 +70,11 @@ private:
         return;
       }
 
-      String::Utf8Value str(info[0]); // `name`
-      const char* arg = ToCString(str);
+      Nan::Utf8String str(info[0]); // `name`
+      std::string cc_string(*str, str.length());
+      const char* arg = cc_string.c_str();
 
-      if (strlen(arg) == 0) {
+      if (str.length() <= 0) {
         Nan::ThrowError("`name` required");
         return;
       } else {
@@ -118,7 +120,8 @@ private:
       return;
     }
 
-    Local<Object> input = info[0]->ToObject();
+    Local<Context> context = info.GetIsolate()->GetCurrentContext();
+    Local<Object> input = info[0]->ToObject(context).ToLocalChecked();
     const char* key_input = node::Buffer::Data(input);
     size_t key_input_sz = node::Buffer::Length(input);
 
@@ -167,11 +170,12 @@ private:
       return;
     }
 
-    Local<Object> input = info[0]->ToObject();
+    Local<Context> context = info.GetIsolate()->GetCurrentContext();
+    Local<Object> input = info[0]->ToObject(context).ToLocalChecked();
     const char* key_input = node::Buffer::Data(input);
     size_t key_input_sz = node::Buffer::Length(input);
 
-    input = info[1]->ToObject();
+    input = info[1]->ToObject(context).ToLocalChecked();
     const char* value_input = node::Buffer::Data(input);
     size_t value_input_sz = node::Buffer::Length(input);
 
@@ -205,7 +209,8 @@ private:
       return;
     }
 
-    Local<Object> input = info[0]->ToObject();
+    Local<Context> context = info.GetIsolate()->GetCurrentContext();
+    Local<Object> input = info[0]->ToObject(context).ToLocalChecked();
     const char* key_input = node::Buffer::Data(input);
     size_t key_input_sz = node::Buffer::Length(input);
 
